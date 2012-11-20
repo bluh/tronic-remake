@@ -27,13 +27,16 @@ boxClicks = {
 	newBoxId = (function(self)
 		local i = 0
 		repeat i = i + 1
-		until not self.boxes[i]
+		until not self:boxExists(i)
 		return i
+	end),
+	boxExists = (function(self,id)
+		return self.boxes[id] ~= nil
 	end),
 	addBox = (function(self,x,y,sizex,sizey,id)
 		id = (id or self:newBoxId())
 		assert((sizex > 0 and sizey > 0),"invalid box properties")
-		assert(not self.boxes[id],"invalid box ID: "..id)
+		assert(not self.boxes[id],"duplicate ID: "..id)
 		self.boxes[id] = setmetatable({id = id,properties={x,y,sizex,sizey},callback = {}},{__index=boxCopy})
 		self.boxes[id]:main()
 		return self.boxes[id]
@@ -70,6 +73,7 @@ boxClicks = {
 	sendCallbacks = (function(self,x,y,kind)
 		for i,b in pairs(self.boxes) do
 			if b:check(x,y) then
+				--if kind ~= "move" then print(kind,x,y,b.id) end
 				if b.callback[kind] then b.callback[kind](b,kind,x,y) end
 			end
 		end

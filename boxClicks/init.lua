@@ -70,6 +70,9 @@ boxClicks = {
 		end
 		return ret
 	end),
+	getBoxFromId = (function(self,id)
+		return self.boxes[id]
+	end),
 	sendCallbacks = (function(self,x,y,kind)
 		for _,a in pairs(self.boxes) do
 			if a:check(x,y) then

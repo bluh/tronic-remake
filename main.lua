@@ -1,8 +1,12 @@
 mode = "OFF"
 mousex,mousey = 0,0
+--dragging vars
 mdrag = nil
 idrag = 0
 kdrag = ""
+--wire vars
+wire = {}
+--
 draw = {}
 tronics = {
 	id = 0,
@@ -25,6 +29,13 @@ function removeDraw(id)
 	draw[id] = nil
 end
 
+function beginWire(b,k,x,y)
+	mode = "WIRE"
+	wire[1],wire[2] = b.properties[1] + 3,b.properties[2] + 3
+	wire[3] = b.properties.kind
+	wire[4] = b.properties.color
+end
+	
 function drawNodes(id,rx,ry,k)
 	print(id,rx,ry,k)
 	local tot = 0
@@ -41,7 +52,10 @@ function drawNodes(id,rx,ry,k)
 			c = {179,1,1}
 		end
 		tronics.nodes[id][tot] = {rx + p[1],ry + p[2],c}
-		boxClicks:addBox(rx + p[1],ry + p[2],6,6,id.."!"..tot) --TODO: add callback
+		box = boxClicks:addBox(rx + p[1],ry + p[2],6,6,id.."!"..tot)
+		box:setCallback(beginWire,"click")
+		box.properties.kind = p[3] --hm
+		box.properties.color = c
 		tot = tot + 1
 	end
 end
@@ -126,7 +140,12 @@ end
 
 function love.mousepressed(x,y,k)
 	if k == "l" then
-		boxClicks:sendCallbacks(x,y,"click")
+		if mode ~= "WIRE" then
+			boxClicks:sendCallbacks(x,y,"click")
+		else
+			boxClicks:sendCallbacks(x,y,"wclick")
+			print("AA")
+		end
 	else
 		boxClicks:sendCallbacks(x,y,"rclick")
 	end
@@ -134,7 +153,7 @@ end
 
 function love.keypressed(k)
 	if k == "t" then
-		boxClicks:pauseCallback("click")
+		--boxClicks:pauseCallback("click")
 		print("paused")
 	end
 end
@@ -156,6 +175,11 @@ function love.draw()
 				love.graphics.setColor(n[3][1],n[3][2],n[3][3])
 				love.graphics.rectangle("fill",n[1],n[2],6,6)
 			end
+		end
+		if mode == "WIRE" then
+			love.graphics.setLine(3,"smooth")
+			love.graphics.setColor(wire[4][1],wire[4][2],wire[4][3])
+			love.graphics.line(wire[1],wire[2],mousex,mousey)
 		end
 		love.graphics.setColor(255,255,255)
 		if mode == "DRAG" then

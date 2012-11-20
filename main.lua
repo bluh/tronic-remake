@@ -26,11 +26,11 @@ function removeDraw(id)
 end
 
 function drawNodes(id,rx,ry,k)
-print(id,rx,ry,k)
-local tot = 0
-tronics.nodes[id] = {}
+	print(id,rx,ry,k)
+	local tot = 0
+	tronics.nodes[id] = {}
 	for _,p in pairs(TRANIX[k].nodes) do
-		print("node "..p[3])
+		print("node "..id.."!"..tot)
 		if p[3] == 0 then
 			c = {18,14,253}
 		elseif p[3] == 1 then
@@ -41,17 +41,21 @@ tronics.nodes[id] = {}
 			c = {179,1,1}
 		end
 		tronics.nodes[id][tot] = {rx + p[1],ry + p[2],c}
+		boxClicks:addBox(rx + p[1],ry + p[2],6,6,id.."!"..tot) --TODO: add callback
 		tot = tot + 1
 	end
 end
 
 function hideNodes(id)
+	for i,_ in pairs(tronics.nodes[id]) do
+		boxClicks:removeBox(id.."!"..i)
+	end
 	tronics.nodes[id] = nil
 end
 
 function finalTron(b,k,x,y)
 	if idrag == 0 then
-		newid = b.id.."~"..tronics.id + 1
+		newid = kdrag.."~"..tronics.id + 1
 		tronics.id = tronics.id + 1
 	else
 		newid = idrag
@@ -65,22 +69,22 @@ function finalTron(b,k,x,y)
 	tronics.acts[newid]:setCallback(dragTron,"click")
 	tronics.acts[newid]:setCallback(remTron,"rclick")
 	addDraw(mdrag,x,y,newid)
-	boxClicks:removeBox("mDrag")
 	drawNodes(newid,x,y,kdrag)
 	mode = "ON"
+	boxClicks:removeBox("mDrag")
 end
 
-function remTron(b,k,x,y) --TODO: figure out why this does weird things
-	idrag = b.id
+function remTron(b,k,x,y)
 	tronics.acts[b.id] = nil
 	removeDraw(b.id)
 	boxClicks:removeBox(b.id)
-	boxClicks:addBox(x - (mdrag:getWidth()/2),y - (mdrag:getHeight()/2),mdrag:getWidth(),mdrag:getHeight(),"mDrag"):setCallback(finalTron,"release")
+	hideNodes(b.id)
 end
 
 function dragTron(b,k,x,y)
 	print(boxClicks:boxExists("mDrag"))
 	if not boxClicks:boxExists("mDrag") then 
+		idrag = b.id
 		mode = "DRAG"
 		hideNodes(b.id)
 		kdrag = b.properties.id
@@ -125,6 +129,13 @@ function love.mousepressed(x,y,k)
 		boxClicks:sendCallbacks(x,y,"click")
 	else
 		boxClicks:sendCallbacks(x,y,"rclick")
+	end
+end
+
+function love.keypressed(k)
+	if k == "t" then
+		boxClicks:pauseCallback("click")
+		print("paused")
 	end
 end
 

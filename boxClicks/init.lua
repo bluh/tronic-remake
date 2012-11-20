@@ -17,12 +17,12 @@ boxCopy = {
 	end),
 	setCallback = (function(self,callb,kind)
 		self.callback[kind] = callb
-		return true
 	end)
 }
 
 boxClicks = {
 	boxes = {},
+	paused = {},
 	activated = true,
 	newBoxId = (function(self)
 		local i = 0
@@ -63,7 +63,7 @@ boxClicks = {
 	end),
 	getBoxFromXY = (function(self,x,y)
 		local ret = {}
-		for i,b in pairs(self.boxes) do
+		for _,b in pairs(self.boxes) do
 			if b:check(x,y) then
 				table.insert(ret,b)
 			end
@@ -71,11 +71,18 @@ boxClicks = {
 		return ret
 	end),
 	sendCallbacks = (function(self,x,y,kind)
-		for i,b in pairs(self.boxes) do
-			if b:check(x,y) then
+		for _,a in pairs(self.boxes) do
+			if a:check(x,y) then
 				--if kind ~= "move" then print(kind,x,y,b.id) end
-				if b.callback[kind] then b.callback[kind](b,kind,x,y) end
+				if a.callback[kind] and self.paused[kind] == nil then a.callback[kind](a,kind,x,y) end
 			end
+		end
+	end),
+	pauseCallback = (function(self,back)
+		if self.paused[back] == "paused" then
+			self.paused[back] = nil
+		else
+			self.paused[back] = "paused" --don't u judge me
 		end
 	end)
 }

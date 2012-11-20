@@ -7,6 +7,7 @@ draw = {}
 tronics = {
 	id = 0,
 	acts = {},
+	nodes = {},
 	dats = {},
 	wires = {}
 }
@@ -24,8 +25,29 @@ function removeDraw(id)
 	draw[id] = nil
 end
 
---function drawNodes(id,k,x,y)
-	--for i,x in pairs(
+function drawNodes(id,rx,ry,k)
+print(id,rx,ry,k)
+local tot = 0
+tronics.nodes[id] = {}
+	for _,p in pairs(TRANIX[k].nodes) do
+		print("node "..p[3])
+		if p[3] == 0 then
+			c = {18,14,253}
+		elseif p[3] == 1 then
+			c = {67,251,29}
+		elseif p[3] == 2 then
+			c = {251,251,30}
+		elseif p[3] == 3 then
+			c = {179,1,1}
+		end
+		tronics.nodes[id][tot] = {rx + p[1],ry + p[2],c}
+		tot = tot + 1
+	end
+end
+
+function hideNodes(id)
+	tronics.nodes[id] = nil
+end
 
 function finalTron(b,k,x,y)
 	if idrag == 0 then
@@ -44,10 +66,11 @@ function finalTron(b,k,x,y)
 	tronics.acts[newid]:setCallback(remTron,"rclick")
 	addDraw(mdrag,x,y,newid)
 	boxClicks:removeBox("mDrag")
+	drawNodes(newid,x,y,kdrag)
 	mode = "ON"
 end
 
-function remTron(b,k,x,y)
+function remTron(b,k,x,y) --TODO: figure out why this does weird things
 	idrag = b.id
 	tronics.acts[b.id] = nil
 	removeDraw(b.id)
@@ -59,6 +82,7 @@ function dragTron(b,k,x,y)
 	print(boxClicks:boxExists("mDrag"))
 	if not boxClicks:boxExists("mDrag") then 
 		mode = "DRAG"
+		hideNodes(b.id)
 		kdrag = b.properties.id
 		print(kdrag,b.properties.id)
 		mdrag = love.graphics.newImage(TRANIX[kdrag].sprite)
@@ -113,9 +137,16 @@ function love.draw()
 		mousex,mousey = love.mouse.getX(),love.mouse.getY()
 		boxClicks:sendCallbacks(mousex,mousey,"move")
 		love.graphics.draw(background,0,0) --must be called first
-		for i,x in pairs(draw) do
+		for _,x in pairs(draw) do
 			love.graphics.draw(x[1],x[2],x[3])
 		end
+		for _,i in pairs(tronics.nodes) do
+			for _,n in pairs(i) do
+				love.graphics.setColor(n[3][1],n[3][2],n[3][3])
+				love.graphics.rectangle("fill",n[1],n[2],6,6)
+			end
+		end
+		love.graphics.setColor(255,255,255)
 		if mode == "DRAG" then
 			love.graphics.draw(mdrag,mousex - (mdrag:getWidth()/2),mousey - (mdrag:getHeight()/2))
 			boxClicks:updateBox("mDrag",mousex - (mdrag:getWidth()/2),mousey - (mdrag:getHeight()/2))

@@ -15,7 +15,7 @@ TRANIX = {
 		ico = "/assets/dataIco.png",
 		sprite = "/assets/data.png",
 		nodes = {
-			{48,21,0} --techinally a dataout just for colour
+			{48,21,4} --let's just use 4 for data and never talk about it ever again
 		}
 		--data will be hardcoded and will not have a source
 	}

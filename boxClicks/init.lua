@@ -65,7 +65,7 @@ boxClicks = {
 		local ret = {}
 		for _,b in pairs(self.boxes) do
 			if b:check(x,y) then
-				table.insert(ret,b)
+				ret[b.id] = b
 			end
 		end
 		return ret

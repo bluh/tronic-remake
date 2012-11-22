@@ -1,4 +1,3 @@
-DEBUG = true
 mode = "OFF"
 mousex,mousey = 0,0
 --dragging vars
@@ -42,15 +41,26 @@ function getWire(to,from)
 	end
 end
 
+function getAssocWires(id)
+	local ret = {}
+	for i,w in pairs(tronics.wires) do
+		if i:match(id) then
+			table.insert(ret,w)
+		end
+	end
+	return ret
+end
+
 function pointOnWire(id,x,y)
 	local sx,sy,fx,fy = 0,0,0,0
 	if boxClicks:boxExists(tronics.wires[id][1].id) and boxClicks:boxExists(tronics.wires[id][2].id) then
 		sx,sy = boxClicks:getBoxFromId(tronics.wires[id][1].id):getXY()
 		fx,fy = boxClicks:getBoxFromId(tronics.wires[id][2].id):getXY()
+		firstx,lastx = math.min(sx,fx),math.max(sx,fx)
 		sx,sy,fx,fy = sx + 3,sy + 3,fx + 3,fy + 3
 		m = -(sy-fy)/(sx-fx)
 		rx,ry = -(sx-x),sy-y
-		if ry > m*rx - (math.ceil(math.abs(m)) + 8) and ry < m*rx + (math.ceil(math.abs(m)) + 8) then
+		if x > firstx - 5 and x < lastx + 5 and ry > m*rx - (math.ceil(math.abs(m)) + 8) and ry < m*rx + (math.ceil(math.abs(m)) + 8) then
 			return true
 		end
 	end
@@ -73,15 +83,26 @@ function finalWire(b,k,x,y)
 	if wire[3] == 0  then
 		if b.properties.kind ~= 4 then return false end
 		c = {18,14,253}
+		if #getAssocWires(wire[5].id) > 0 then
+			return false
+		end
 	elseif wire[3] == 1 then
 		if b.properties.kind ~= 4 then return false end
 		c = {67,251,29}
+		if #getAssocWires(wire[5].id) > 0 then
+			return false
+		end
 	elseif wire[3] == 2 then
 		if b.properties.kind ~= 3 then return false end
 		c = {179,1,1}
-		--make sure that there can be multiple outs to a single in but only one out to one in
+		if #getAssocWires(b.id) > 0 then
+			return false
+		end
 	elseif wire[3] == 3 then
 		if b.properties.kind ~= 2 then return false end
+		if #getAssocWires(wire[5].id) > 0 then
+			return false
+		end
 		c = {179,1,1}
 	elseif wire[3] == 4 then
 		if b.properties.kind == 1 then
@@ -91,15 +112,16 @@ function finalWire(b,k,x,y)
 		else
 			return false
 		end
+		if #getAssocWires(b.id) > 0 then
+			return false
+		end
 	end
 	if tronics.wires[b.id..">"..wire[5].id] then
-		print("wire exists!!")
 		removeWire(b.id..">"..wire[5].id)
 		mode = "ON"
 		return false
 	elseif tronics.wires[wire[5].id..">"..b.id] then
 		removeWire(wire[5].id..">"..b.id)
-		print('removing')
 		mode = "ON"
 		return true
 	else
@@ -172,7 +194,6 @@ function remTron(b,k,x,y)
 end
 
 function dragTron(b,k,x,y)
-	print(boxClicks:boxExists("mDrag"))
 	if not boxClicks:boxExists("mDrag") then 
 		idrag = b.id
 		mode = "DRAG"
@@ -198,9 +219,8 @@ function love.load()
 	mode = "LOADING"
 	love.graphics.setLine(4,"smooth")
 	love.graphics.setIcon(love.graphics.newImage("/assets/icon.png"))
-	loadBC = love.filesystem.load("/boxClicks/init.lua") or error("could not find boxClicks library! try reinstalling")
+	assert((love.filesystem.load("/boxClicks/init.lua")() == nil),"could not find boxClicks library! try reinstalling")
 	loadTC = love.filesystem.load("/tronics/tronicslist.lua") or error("could not find tronics list! try reinstalling")
-	loadBC() --why
 	loadTC() --WHY w-w
 	local d = 8
 	for i,x in pairs(TRANIX) do --time to start fucking colouring these icons, kids
@@ -211,7 +231,6 @@ function love.load()
 	end
 	background = love.graphics.newImage("/assets/background.png") --whatever
 	mode = "ON"
-	print("ON")
 end
 
 function love.mousepressed(x,y,k)
@@ -219,8 +238,7 @@ function love.mousepressed(x,y,k)
 		if mode ~= "WIRE" then
 			boxClicks:sendCallbacks(x,y,"click")
 		else
-			local t = boxClicks:sendCallbacks(x,y,"wclick")
-			print(t)
+			boxClicks:sendCallbacks(x,y,"wclick")
 		end
 	else
 		if mode ~= "WIRE" then
@@ -238,12 +256,6 @@ function love.mousepressed(x,y,k)
 		end
 	end
 end
-
-function love.keypressed(k)
-	if k == "t" then
-		--boxClicks:pauseCallback("click")
-		print("paused")
-	end
 end
 
 function love.mousereleased(x,y)

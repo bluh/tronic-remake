@@ -1,3 +1,4 @@
+DEBUG = true
 mode = "OFF"
 mousex,mousey = 0,0
 --dragging vars
@@ -29,6 +30,37 @@ function removeDraw(id)
 	draw[id] = nil
 end
 
+function getWire(to,from)
+	if not tronics.wires[to..">"..from] then
+		if not tronics.wires[from..">"..to] then
+			return false
+		else
+			return tronics.wires[from..">"..to]
+		end
+	else
+		return tronics.wires[to..">"..from]
+	end
+end
+
+function pointOnWire(id,x,y)
+	local sx,sy,fx,fy = 0,0,0,0
+	if boxClicks:boxExists(tronics.wires[id][1].id) and boxClicks:boxExists(tronics.wires[id][2].id) then
+		sx,sy = boxClicks:getBoxFromId(tronics.wires[id][1].id):getXY()
+		fx,fy = boxClicks:getBoxFromId(tronics.wires[id][2].id):getXY()
+		sx,sy,fx,fy = sx + 3,sy + 3,fx + 3,fy + 3
+		m = -(sy-fy)/(sx-fx)
+		rx,ry = -(sx-x),sy-y
+		if ry > m*rx - (math.ceil(math.abs(m)) + 8) and ry < m*rx + (math.ceil(math.abs(m)) + 8) then
+			return true
+		end
+	end
+	return false
+end
+
+function removeWire(id)
+	tronics.wires[id] = nil
+end
+
 function beginWire(b,k,x,y)
 	mode = "WIRE"
 	wire[1],wire[2] = b.properties[1] + 3,b.properties[2] + 3
@@ -57,11 +89,24 @@ function finalWire(b,k,x,y)
 		elseif b.properties ~= 0 then
 			c = {18,14,253}
 		else
-		return false
+			return false
 		end
 	end
-	tronics.wires[wire[5].id..">"..b.id] = {wire[5],b,c}
-	mode = "ON"
+	if tronics.wires[b.id..">"..wire[5].id] then
+		print("wire exists!!")
+		removeWire(b.id..">"..wire[5].id)
+		mode = "ON"
+		return false
+	elseif tronics.wires[wire[5].id..">"..b.id] then
+		removeWire(wire[5].id..">"..b.id)
+		print('removing')
+		mode = "ON"
+		return true
+	else
+		tronics.wires[wire[5].id..">"..b.id] = {wire[5],b,c}
+		mode = "ON"
+		return true
+	end
 end
 
 function drawNodes(id,rx,ry,k)
@@ -107,7 +152,7 @@ function finalTron(b,k,x,y)
 	end
 	idrag = 0
 	x,y = x - (mdrag:getWidth()/2),y - (mdrag:getHeight()/2)
-	x,y = x - (x % 16),y - (y % 16)
+	x,y = x - ((x + 8) % 16),y - ((y + 8) % 16)
 	tronics.acts[newid] = boxClicks:addBox(x,y,mdrag:getWidth(),mdrag:getHeight(),newid)
 	tronics.acts[newid].properties["id"] = kdrag
 	tronics.acts[newid]:setCallback(dragTron,"click")
@@ -157,15 +202,16 @@ function love.load()
 	loadTC = love.filesystem.load("/tronics/tronicslist.lua") or error("could not find tronics list! try reinstalling")
 	loadBC() --why
 	loadTC() --WHY w-w
-	local d = 20
+	local d = 8
 	for i,x in pairs(TRANIX) do --time to start fucking colouring these icons, kids
-		d = d + 20
+		d = d + 16
 		x.icon = love.graphics.newImage(x.ico)
-		addDraw(x.icon,d,540,i)
-		boxClicks:addBox(d,540,x.icon:getWidth(),x.icon:getHeight(),i):setCallback(newTron,"click")
+		addDraw(x.icon,d,545,i)
+		boxClicks:addBox(d,545,x.icon:getWidth(),x.icon:getHeight(),i):setCallback(newTron,"click")
 	end
 	background = love.graphics.newImage("/assets/background.png") --whatever
 	mode = "ON"
+	print("ON")
 end
 
 function love.mousepressed(x,y,k)
@@ -173,7 +219,8 @@ function love.mousepressed(x,y,k)
 		if mode ~= "WIRE" then
 			boxClicks:sendCallbacks(x,y,"click")
 		else
-			boxClicks:sendCallbacks(x,y,"wclick")
+			local t = boxClicks:sendCallbacks(x,y,"wclick")
+			print(t)
 		end
 	else
 		if mode ~= "WIRE" then
@@ -183,8 +230,10 @@ function love.mousepressed(x,y,k)
 			wire = {}
 		end
 		if mode == "ON" then
-			for _,w in pairs(tronics.wires) do
-				boxClicks:getBoxFromId(w[1].id):getXY()
+			for i,_ in pairs(tronics.wires) do
+				if pointOnWire(i,x,y) then
+					removeWire(i)
+				end
 			end
 		end
 	end
@@ -209,8 +258,12 @@ function love.draw()
 		for _,x in pairs(draw) do
 			love.graphics.draw(x[1],x[2],x[3])
 		end
-		for _,w in pairs(tronics.wires) do
-			love.graphics.setColor(w[3])
+		for i,w in pairs(tronics.wires) do
+			if not pointOnWire(i,mousex,mousey) then
+				love.graphics.setColor(w[3])
+			else
+				love.graphics.setColor(math.min(255,w[3][1] + 80),math.min(255,w[3][2] + 80),math.min(255,w[3][3] + 80))
+			end
 			b1 = boxClicks:getBoxFromId(w[1].id)
 			b2 = boxClicks:getBoxFromId(w[2].id)
 			if b1 and b2 then
@@ -231,7 +284,7 @@ function love.draw()
 			end
 		end
 		if mode == "WIRE" then
-			love.graphics.setColor(wire[4][1],wire[4][2],wire[4][3])
+			love.graphics.setColor(math.min(255,wire[4][1] + 40),math.min(255,wire[4][2] + 40),math.min(255,wire[4][3] + 40))
 			love.graphics.line(wire[1],wire[2],mousex,mousey)
 		end
 		love.graphics.setColor(255,255,255)

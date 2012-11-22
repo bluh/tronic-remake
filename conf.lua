@@ -4,4 +4,5 @@ function love.conf(t)
 	t.console = true
 	t.version = "0.8.0"
 	t.modules.joystick = false
+	t.modules.physics = false
 end

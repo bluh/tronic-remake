@@ -255,7 +255,6 @@ function love.mousepressed(x,y,k)
 		end
 	end
 end
-end
 
 function love.mousereleased(x,y)
 	boxClicks:sendCallbacks(x,y,"release")

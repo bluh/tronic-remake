@@ -220,8 +220,7 @@ function love.load()
 	love.graphics.setLine(4,"smooth")
 	love.graphics.setIcon(love.graphics.newImage("/assets/icon.png"))
 	assert((love.filesystem.load("/boxClicks/init.lua")() == nil),"could not find boxClicks library! try reinstalling")
-	loadTC = love.filesystem.load("/tronics/tronicslist.lua") or error("could not find tronics list! try reinstalling")
-	loadTC() --WHY w-w
+	assert((love.filesystem.load("/tronics/tronicslist.lua")() ==nil),"could not find tronics list! try reinstalling")
 	local d = 8
 	for i,x in pairs(TRANIX) do --time to start fucking colouring these icons, kids
 		d = d + 16

@@ -1,8 +1,52 @@
+TRANIXORDER = {
+"data",
+"rbutton",
+"add",
+"subtract",
+"multi",
+"division",
+}
 TRANIX = {
 	add = {
 		ico = "/assets/addIco.png",
 		sprite = "/assets/add.png",
 		source = "/tronics/add/main.lua",
+		nodes = {
+			{-6,21,2},
+			{48,21,3},
+			{12,-6,1},
+			{30,-6,1},
+			{21,48,0}
+		}
+	},
+	subtract = {
+		ico = "/assets/subtractIco.png",
+		sprite = "/assets/subtract.png",
+		source = "/tronics/subtract/main.lua",
+		nodes = {
+			{-6,21,2},
+			{48,21,3},
+			{12,-6,1},
+			{30,-6,1},
+			{21,48,0}
+		}
+	},
+	multi = {
+		ico = "/assets/multiIco.png",
+		sprite = "/assets/multi.png",
+		source = "/tronics/multi/main.lua",
+		nodes = {
+			{-6,21,2},
+			{48,21,3},
+			{12,-6,1},
+			{30,-6,1},
+			{21,48,0}
+		}
+	},
+	division = {
+		ico = "/assets/divisionIco.png",
+		sprite = "/assets/division.png",
+		source = "/tronics/division/main.lua",
 		nodes = {
 			{-6,21,2},
 			{48,21,3},
@@ -29,6 +73,7 @@ TRANIX = {
 		--data will be hardcoded and will not have a source
 	}
 }
+--tranixorder = the order in which tronics are displayed at the bottom (add your tronic here in the order you want it)
 --ico = path to the icon file (any size, perferably 16x16)
 --sprite = path to the larger image file (any size, perferably 48x48)
 --source = path to the source of the tronic (see wiki)

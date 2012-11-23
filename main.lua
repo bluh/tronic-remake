@@ -25,11 +25,12 @@ function love.load()
 	love.filesystem.load("/tronics/tronicslist.lua")()
 	love.filesystem.load("/functions.lua")()
 	local d = 8
-	for i,x in pairs(TRANIX) do --time to start fucking colouring these icons, kids
-		d = d + 16
+	for _,t in pairs(TRANIXORDER) do --time to start fucking colouring these icons, kids
+		x = TRANIX[t]
 		x.icon = love.graphics.newImage(x.ico)
-		addDraw(x.icon,d,545,i)
-		boxClicks:addBox(d,545,x.icon:getWidth(),x.icon:getHeight(),i):setCallback(newTron,"click")
+		d = d + x.icon:getWidth()
+		addDraw(x.icon,d,545,t)
+		boxClicks:addBox(d,545,x.icon:getWidth(),x.icon:getHeight(),t):setCallback(newTron,"click")
 		if x.source then
 			x.fsource = love.filesystem.load(x.source)
 		end

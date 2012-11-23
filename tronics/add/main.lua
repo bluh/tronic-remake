@@ -1,4 +1,5 @@
-(function(a,b)
-sendData(a+b)
-end)
---this will eventually mean something I assure you
+box = ...
+t = getData(box.id,2)
+a = getData(box.id,3)
+sendData(box.id,4,t+a)
+flowOut(box.id,1)

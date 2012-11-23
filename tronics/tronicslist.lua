@@ -11,6 +11,15 @@ TRANIX = {
 			{21,48,0}
 		}
 	},
+	rbutton = {
+		ico = "/assets/rbuttonIco.png",
+		sprite = "/assets/rbutton.png",
+		source = "/tronics/rbutton/main.lua",
+		preload = "/tronics/rbutton/preload.lua",
+		nodes = {
+			{48,21,3}
+		}
+	},
 	data = {
 		ico = "/assets/dataIco.png",
 		sprite = "/assets/data.png",

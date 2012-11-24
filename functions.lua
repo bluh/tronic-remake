@@ -1,4 +1,4 @@
-function addDraw(dr,x,y,id)
+function addDraw(dr,x,y,id) --this is used for an overlay, not for grid things
 	if id then
 		draw[id] = {dr,x,y}
 	else
@@ -98,7 +98,6 @@ function finalWire(b,k,x,y)
 			return false
 		end
 	end
-	print(b.id,wire[5].id)
 	if tronics.wires[b.id..">"..wire[5].id] then
 		removeWire(b.id..">"..wire[5].id)
 		mode = "ON"
@@ -142,6 +141,16 @@ function drawNodes(id,rx,ry,k,par)
 	end
 end
 
+function removeNodes(id)
+	for i,_ in pairs(tronics.nodes[id]) do
+		boxClicks:removeBox(id.."!"..i)
+		for _,w in pairs(getAssocWires(id.."!"..i)) do
+			removeWire(w[1].id..">"..w[2].id)
+		end
+	end
+	tronics.nodes[id] = nil
+end
+
 function hideNodes(id)
 	for i,_ in pairs(tronics.nodes[id]) do
 		boxClicks:removeBox(id.."!"..i)
@@ -161,14 +170,13 @@ function finalTron(b,k,x,y)
 		newid = idrag
 	end
 	idrag = 0
-	x,y = x - (mdrag:getWidth()/2),y - (mdrag:getHeight()/2)
+	x,y = x - (mdrag:getWidth()/2) - screenx,y - (mdrag:getHeight()/2) - screeny
 	x,y = x - ((x + 8) % 16),y - ((y + 8) % 16)
 	tronics.acts[newid] = boxClicks:addBox(x,y,mdrag:getWidth(),mdrag:getHeight(),newid)
 	tronics.acts[newid].properties["id"] = kdrag
 	tronics.acts[newid]:setCallback(dragTron,"click")
 	tronics.acts[newid]:setCallback(remTron,"rclick")
 	tronics.acts[newid]:setCallback(outputData,"mclick")
-	addDraw(mdrag,x,y,newid)
 	drawNodes(newid,x,y,kdrag,tronics.acts[newid])
 	hideNodes("temp")
 	mode = "ON"
@@ -177,9 +185,8 @@ end
 
 function remTron(b,k,x,y)
 	tronics.acts[b.id] = nil
-	removeDraw(b.id)
 	boxClicks:removeBox(b.id)
-	hideNodes(b.id)
+	removeNodes(b.id)
 end
 
 function dragTron(b,k,x,y)
@@ -189,9 +196,9 @@ function dragTron(b,k,x,y)
 		hideNodes(b.id)
 		kdrag = b.properties.id
 		mdrag = love.graphics.newImage(TRANIX[kdrag].sprite)
-		removeDraw(b.id)
 		boxClicks:removeBox(b.id)
-		boxClicks:addBox(x - (mdrag:getWidth()/2),y - (mdrag:getHeight()/2),mdrag:getWidth(),mdrag:getHeight(),"mDrag"):setCallback(finalTron,"release")
+		boxClicks:addBox(x - (mdrag:getWidth()/2),y - (mdrag:getHeight()/2),mdrag:getWidth(),mdrag:getHeight(),"mDrag"):setCallback(finalTron,"orelease")
+		tronics.acts[b.id] = nil
 	end
 end
 
@@ -200,7 +207,7 @@ function newTron(b,k,x,y)
 		mode = "DRAG"
 		kdrag = b.id
 		mdrag = love.graphics.newImage(TRANIX[b.id].sprite)
-		boxClicks:addBox(x - (mdrag:getWidth()/2),y - (mdrag:getHeight()/2),mdrag:getWidth(),mdrag:getHeight(),"mDrag"):setCallback(finalTron,"release")
+		boxClicks:addBox(x - (mdrag:getWidth()/2),y - (mdrag:getHeight()/2),mdrag:getWidth(),mdrag:getHeight(),"mDrag"):setCallback(finalTron,"orelease")
 	end
 end
 

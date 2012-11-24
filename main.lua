@@ -28,9 +28,10 @@ function love.load()
 	for _,t in pairs(TRANIXORDER) do --time to start fucking colouring these icons, kids
 		x = TRANIX[t]
 		x.icon = love.graphics.newImage(x.ico)
+		x.image = love.graphics.newImage(x.sprite)
 		d = d + x.icon:getWidth()
 		addDraw(x.icon,d,545,t)
-		boxClicks:addBox(d,545,x.icon:getWidth(),x.icon:getHeight(),t):setCallback(newTron,"click")
+		boxClicks:addBox(d,545,x.icon:getWidth(),x.icon:getHeight(),t):setCallback(newTron,"oclick")
 		if x.source then
 			x.fsource = love.filesystem.load(x.source)
 		end
@@ -43,27 +44,31 @@ function love.load()
 	end
 	background = love.graphics.newImage("/assets/background.png") --whatever
 	addDraw(love.graphics.newImage("/assets/go.png"),16,16,"go")
-	boxClicks:addBox(16,16,32,32,"go"):setCallback(startCompute,"click")
+	boxClicks:addBox(16,16,32,32,"go"):setCallback(startCompute,"oclick")
 	mode = "ON"
 end
 
 function love.mousepressed(x,y,k)
+	ax,ay = x - screenx,y - screeny
 	if k == "l" then
 		if mode ~= "WIRE" then
 			if mode ~= "COMPUTE" then
-				boxClicks:sendCallbacks(x,y,"click")
+				boxClicks:sendCallbacks(x,y,"oclick") --oclick = overlay click
+				boxClicks:sendCallbacks(ax,ay,"click")
 			else
-				boxClicks:sendCallbacks(x,y,"cclick")
+				boxClicks:sendCallbacks(x,y,"occlick")
+				boxClicks:sendCallbacks(ax,ay,"cclick")
 			end
 		else
-			boxClicks:sendCallbacks(x,y,"wclick")
+			boxClicks:sendCallbacks(ax,ay,"wclick")
 		end
 	elseif k == "r" then
 		if mode ~= "WIRE" then
 			if mode ~= "COMPUTE" then
-				boxClicks:sendCallbacks(x,y,"rclick")
+				--boxClicks:sendCallbacks(x,y,"orclick")
+				boxClicks:sendCallbacks(ax,ay,"rclick")
 			else
-				boxClicks:sendCallbacks(x,y,"cclick")
+				boxClicks:sendCallbacks(ax,ay,"cclick")
 			end
 		else
 			mode = "ON"
@@ -82,33 +87,46 @@ function love.mousepressed(x,y,k)
 end
 
 function love.mousereleased(x,y)
-	boxClicks:sendCallbacks(x,y,"release")
+	ax,ay = x - screenx,y - screeny
+	boxClicks:sendCallbacks(ax,ay,"release")
+	boxClicks:sendCallbacks(x,y,"orelease")
 end
 
---[[function love.keypressed(k)
+function love.keypressed(k)
 	if k == "up" then
-		screeny = screeny - 16
-	elseif k == "down" then
 		screeny = screeny + 16
+	elseif k == "down" then
+		screeny = screeny - 16
 	elseif k == "right" then
-		screenx = screenx + 16
-	elseif k == "left" then
 		screenx = screenx - 16
+	elseif k == "left" then
+		screenx = screenx + 16
 	elseif k == " " then
 		screenx,screeny = 0,0
 	end
-end]] --probably gonna make screen scrolling a thing someday
+end
 
 function love.draw()
 	if mode ~= "OFF" and mode ~= "LOADING" then
-		mousex,mousey = love.mouse.getX(),love.mouse.getY()
+		mousex,mousey = love.mouse.getX() + screenx,love.mouse.getY() + screeny
+		amousex,amousey = love.mouse.getX(),love.mouse.getY()
 		boxClicks:sendCallbacks(mousex,mousey,"move")
 		love.graphics.draw(background,0,0) --must be called first
+		--draw overlay
 		for _,x in pairs(draw) do
 			love.graphics.draw(x[1],x[2],x[3])
 		end
+		love.graphics.setColor(0,0,0)
+		love.graphics.print("{"..screenx..","..screeny.."}",600,16,0,1.5,1.5)
+		--draw trons
+		love.graphics.setColor(255,255,255)
+		for i,t in pairs(tronics.acts) do
+			tx,ty = t:getXY()
+			love.graphics.draw(TRANIX[t.properties.id].image,tx + screenx,ty + screeny)
+		end
+		--draw wires
 		for i,w in pairs(tronics.wires) do
-			if not pointOnWire(i,mousex,mousey) then
+			if not pointOnWire(i,amousex - screenx,amousey - screeny) then
 				love.graphics.setColor(w[3])
 			else
 				love.graphics.setColor(math.min(255,w[3][1] + 80),math.min(255,w[3][2] + 80),math.min(255,w[3][3] + 80))
@@ -118,10 +136,11 @@ function love.draw()
 			if b1 and b2 then
 				sx,sy = b1:getXY()
 				ex,ey = b2:getXY()
-				love.graphics.line(sx + 3,sy + 3,ex + 3,ey + 3)
+				love.graphics.line(sx + screenx + 3,sy + screeny + 3,ex + screenx + 3,ey + screeny + 3)
 			end
 		end
-		food = boxClicks:getBoxFromXY(mousex,mousey)
+		--draw nodes
+		food = boxClicks:getBoxFromXY(amousex - screenx,amousey - screeny)
 		for i,a in pairs(tronics.nodes) do
 			for t,n in pairs(a) do
 				if not food[i.."!"..t] then
@@ -129,18 +148,20 @@ function love.draw()
 				else
 					love.graphics.setColor(math.min(255,n[3][1]+80),math.min(255,n[3][2]+80),math.min(255,n[3][3]+80))
 				end
-				love.graphics.rectangle("fill",n[1],n[2],6,6) 
+				love.graphics.rectangle("fill",n[1] + screenx,n[2] + screeny,6,6) 
 			end
 		end
+		--draw wire
 		if mode == "WIRE" then
 			love.graphics.setColor(math.min(255,wire[4][1] + 40),math.min(255,wire[4][2] + 40),math.min(255,wire[4][3] + 40))
-			love.graphics.line(wire[1],wire[2],mousex,mousey)
+			love.graphics.line(wire[1] + screenx,wire[2] + screeny,amousex,amousey)
 		end
 		love.graphics.setColor(255,255,255)
+		--draw dragged item
 		if mode == "DRAG" then
-			drawNodes("temp",mousex - (mdrag:getWidth()/2),mousey - (mdrag:getHeight()/2),kdrag)
-			love.graphics.draw(mdrag,mousex - (mdrag:getWidth()/2),mousey - (mdrag:getHeight()/2))
-			boxClicks:updateBox("mDrag",mousex - (mdrag:getWidth()/2),mousey - (mdrag:getHeight()/2))
+			drawNodes("temp",amousex - (mdrag:getWidth()/2) - screenx,amousey - (mdrag:getHeight()/2) - screeny,kdrag)
+			love.graphics.draw(mdrag,amousex - (mdrag:getWidth()/2),amousey - (mdrag:getHeight()/2))
+			boxClicks:updateBox("mDrag",amousex - (mdrag:getWidth()/2),amousey - (mdrag:getHeight()/2))
 		end
 	end
 end

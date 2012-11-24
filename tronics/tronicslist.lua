@@ -1,6 +1,7 @@
 TRANIXORDER = {
 "data",
 "rbutton",
+"keyboard",
 "add",
 "subtract",
 "multi",
@@ -62,6 +63,14 @@ TRANIX = {
 		preload = "/tronics/rbutton/preload.lua",
 		nodes = {
 			{48,21,3}
+		}
+	},
+	keyboard = {
+		ico = "/assets/keyboardIco.png",
+		sprite = "/assets/keyboard.png",
+		nodes = {
+			{54,-6,3},
+			{70,-6,0}
 		}
 	},
 	data = {

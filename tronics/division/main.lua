@@ -1,6 +1,6 @@
 box = ...
-t = getData(box.id,2)
-a = getData(box.id,3)
+t = tonumber(getData(box.id,2)) or 0
+a = tonumber(getData(box.id,3)) or 0
 if a == 0 then
 	print("flow end because a = 0 ")
 	return false

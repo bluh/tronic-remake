@@ -24,12 +24,11 @@ function love.load()
 	love.filesystem.load("/boxClicks/init.lua")()
 	love.filesystem.load("/tronics/tronicslist.lua")()
 	love.filesystem.load("/functions.lua")()
-	local d = 8
+	local d = 24
 	for _,t in pairs(TRANIXORDER) do --time to start fucking colouring these icons, kids
 		x = TRANIX[t]
 		x.icon = love.graphics.newImage(x.ico)
 		x.image = love.graphics.newImage(x.sprite)
-		d = d + x.icon:getWidth()
 		addDraw(x.icon,d,545,t)
 		boxClicks:addBox(d,545,x.icon:getWidth(),x.icon:getHeight(),t):setCallback(newTron,"oclick")
 		if x.source then
@@ -41,6 +40,7 @@ function love.load()
 		if x.unload then
 			x.funload = love.filesystem.load(x.unload)
 		end
+		d = d + x.icon:getWidth()
 	end
 	background = love.graphics.newImage("/assets/background.png") --whatever
 	addDraw(love.graphics.newImage("/assets/go.png"),16,16,"go")

@@ -7,6 +7,7 @@ idrag = 0
 kdrag = ""
 --wire vars
 wire = {}
+lastdt = 0
 --
 draw = {}
 tronics = {
@@ -24,6 +25,7 @@ function love.load()
 	love.filesystem.load("/boxClicks/init.lua")()
 	love.filesystem.load("/tronics/tronicslist.lua")()
 	love.filesystem.load("/functions.lua")()
+	love.filesystem.load("/inputHandler/init.lua")()
 	local d = 24
 	for _,t in pairs(TRANIXORDER) do --time to start fucking colouring these icons, kids
 		x = TRANIX[t]
@@ -42,7 +44,6 @@ function love.load()
 		end
 		d = d + x.icon:getWidth()
 	end
-	background = love.graphics.newImage("/assets/background.png") --whatever
 	addDraw(love.graphics.newImage("/assets/go.png"),16,16,"go")
 	boxClicks:addBox(16,16,32,32,"go"):setCallback(startCompute,"oclick")
 	mode = "ON"
@@ -68,6 +69,7 @@ function love.mousepressed(x,y,k)
 				--boxClicks:sendCallbacks(x,y,"orclick")
 				boxClicks:sendCallbacks(ax,ay,"rclick")
 			else
+				boxClicks:sendCallbacks(x,y,"occlick")
 				boxClicks:sendCallbacks(ax,ay,"cclick")
 			end
 		else
@@ -106,12 +108,12 @@ function love.keypressed(k)
 	end
 end
 
-function love.draw()
+function love.draw(dt)
 	if mode ~= "OFF" and mode ~= "LOADING" then
 		mousex,mousey = love.mouse.getX() + screenx,love.mouse.getY() + screeny
 		amousex,amousey = love.mouse.getX(),love.mouse.getY()
 		boxClicks:sendCallbacks(mousex,mousey,"move")
-		love.graphics.draw(background,0,0) --must be called first
+		love.graphics.draw(TRANIX.background,0,0) --must be called first
 		--draw overlay
 		for _,x in pairs(draw) do
 			love.graphics.draw(x[1],x[2],x[3])
@@ -127,7 +129,12 @@ function love.draw()
 		--draw wires
 		for i,w in pairs(tronics.wires) do
 			if not pointOnWire(i,amousex - screenx,amousey - screeny) then
-				love.graphics.setColor(w[3])
+				if w.activated then --leftover from wire highlighting which I'll get back to someday
+					love.graphics.setColor(0,0,0)
+					print(w.activated)
+				else
+					love.graphics.setColor(w[3])
+				end
 			else
 				love.graphics.setColor(math.min(255,w[3][1] + 80),math.min(255,w[3][2] + 80),math.min(255,w[3][3] + 80))
 			end

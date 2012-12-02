@@ -107,7 +107,7 @@ function finalWire(b,k,x,y)
 		mode = "ON"
 		return true
 	else
-		tronics.wires[wire[5].id..">"..b.id] = {wire[5],b,c}
+		tronics.wires[wire[5].id..">"..b.id] = {wire[5],b,c,activated = false}
 		mode = "ON"
 		return true
 	end
@@ -214,14 +214,14 @@ end
 function stopCompute(b,k,x,y)
 	draw["go"] = {love.graphics.newImage("/assets/go.png"),draw["go"][2],draw["go"][3]}
 	boxClicks:removeBox("stop")
-	boxClicks:addBox(16,16,32,32,"go"):setCallback(startCompute,"click")
+	boxClicks:addBox(16,16,32,32,"go"):setCallback(startCompute,"oclick")
 	mode = "ON"
 end
 
 function startCompute(b,k,x,y)
 	draw["go"] = {love.graphics.newImage("/assets/stop.png"),draw["go"][2],draw["go"][3]}
 	boxClicks:removeBox("go")
-	boxClicks:addBox(16,16,32,32,"stop"):setCallback(stopCompute,"cclick")
+	boxClicks:addBox(16,16,32,32,"stop"):setCallback(stopCompute,"occlick")
 	for i,a in pairs(tronics.acts) do
 		if TRANIX[a.properties.id].preload then
 			TRANIX[a.properties.id].fpreload(a)
@@ -253,7 +253,7 @@ function getData(id,node)
 		error("more than one datain node connected to "..id.."!"..node.." node!")
 	end
 	if #wire == 0 then
-		print("1")
+		print("no data assuming 1")
 		return 1
 	end
 	if wire[1][1].id == id.."!"..node then
@@ -261,13 +261,13 @@ function getData(id,node)
 	else
 		ntron = wire[1][1].properties.parent
 	end
-	print(tronics.dats[ntron.id] or 0)
+	print("got data "..(tronics.dats[ntron.id] or 0))
 	return (tronics.dats[ntron.id] or 0)
 end
 
 function sendData(id,node,data)
 	wire = getAssocWires(id.."!"..node)
-	print(id.."!"..node,data,#wire)
+	print("sending data out of "..id.."!"..node,data,#wire)
 	if #wire > 1 then
 		error("more than one data node connected to "..id.."!"..node.." node!")
 	end

@@ -8,6 +8,7 @@ TRANIXORDER = {
 "division",
 }
 TRANIX = {
+	background = love.graphics.newImage("/assets/background.png"),
 	add = {
 		ico = "/assets/addIco.png",
 		sprite = "/assets/add.png",
@@ -68,10 +69,13 @@ TRANIX = {
 	keyboard = {
 		ico = "/assets/keyboardIco.png",
 		sprite = "/assets/keyboard.png",
+		source = "/tronics/keyboard/main.lua",
+		preload = "/tronics/keyboard/preload.lua",
 		nodes = {
 			{54,-6,3},
 			{70,-6,0}
-		}
+		},
+		gui = love.graphics.newImage("/assets/keyboardGUI.png")
 	},
 	data = {
 		ico = "/assets/dataIco.png",
@@ -92,3 +96,4 @@ TRANIX = {
 --1: data in
 --2: flow in
 --3: flow out
+--friendly reminder that you can add any assets to this list that you want and they'll be available in the scope of the functions

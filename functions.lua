@@ -89,7 +89,7 @@ function finalWire(b,k,x,y)
 	elseif wire[3] == 4 then
 		if b.properties.kind == 1 then
 			c = {67,251,29}
-		elseif b.properties ~= 0 then
+		elseif b.properties.kind == 0 then
 			c = {18,14,253}
 		else
 			return false
@@ -230,6 +230,12 @@ function startCompute(b,k,x,y)
 	mode = "COMPUTE"
 end
 
+function resumeFlow(wire)
+	print("deactivating wire")
+	wire.activated = false
+	TRANIX[nexttron.properties.id].fsource(nexttron)
+end
+
 function flowOut(id,node)
 	wire = getAssocWires(id.."!"..node)
 	if #wire > 1 then
@@ -244,7 +250,10 @@ function flowOut(id,node)
 	else
 		ntron = wire[1][1].properties.parent
 	end
-	TRANIX[ntron.properties.id].fsource(ntron)
+	print("activating wire")
+	totaldt = 0
+	wire[1].activated = true
+	nexttron = ntron
 end
 
 function getData(id,node)

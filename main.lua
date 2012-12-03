@@ -7,7 +7,8 @@ idrag = 0
 kdrag = ""
 --wire vars
 wire = {}
-lastdt = 0
+nexttron = nil
+totaldt = 0
 --
 draw = {}
 tronics = {
@@ -105,6 +106,12 @@ function love.keypressed(k)
 		screenx = screenx + 16
 	elseif k == " " then
 		screenx,screeny = 0,0
+	elseif k == "q" then
+		if mode == "ON" then
+			startCompute()
+		elseif mode == "COMPUTE" then
+			stopCompute()
+		end
 	end
 end
 
@@ -129,14 +136,16 @@ function love.draw(dt)
 		--draw wires
 		for i,w in pairs(tronics.wires) do
 			if not pointOnWire(i,amousex - screenx,amousey - screeny) then
-				if w.activated then --leftover from wire highlighting which I'll get back to someday
-					love.graphics.setColor(0,0,0)
-					print(w.activated)
-				else
-					love.graphics.setColor(w[3])
-				end
+				love.graphics.setColor(w[3])
 			else
 				love.graphics.setColor(math.min(255,w[3][1] + 80),math.min(255,w[3][2] + 80),math.min(255,w[3][3] + 80))
+			end
+			if w.activated then --leftover from wire highlighting which I'll get back to someday
+				love.graphics.setColor(230,230,230)
+				totaldt = totaldt + love.timer.getDelta()
+				if totaldt > 0.4 then
+					resumeFlow(w)
+				end
 			end
 			b1 = boxClicks:getBoxFromId(w[1].id)
 			b2 = boxClicks:getBoxFromId(w[2].id)

@@ -1,2 +1,2 @@
 box = ...
-addDraw(TRANIX.keyboard.gui,160,14,"keyboardgui")
+addDraw(TRANIX.keyboard.gui,151,14,"keyboardgui")

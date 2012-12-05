@@ -215,6 +215,11 @@ function stopCompute(b,k,x,y)
 	draw["go"] = {love.graphics.newImage("/assets/go.png"),draw["go"][2],draw["go"][3]}
 	boxClicks:removeBox("stop")
 	boxClicks:addBox(16,16,32,32,"go"):setCallback(startCompute,"oclick")
+	for i,a in pairs(tronics.acts) do
+		if TRANIX[a.properties.id].unload then
+			TRANIX[a.properties.id].funload(a) --haha
+		end
+	end
 	mode = "ON"
 end
 

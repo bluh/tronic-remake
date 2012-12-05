@@ -71,11 +71,14 @@ TRANIX = {
 		sprite = "/assets/keyboard.png",
 		source = "/tronics/keyboard/main.lua",
 		preload = "/tronics/keyboard/preload.lua",
+		unload = "/tronics/keyboard/unload.lua",
 		nodes = {
 			{54,-6,3},
 			{70,-6,0}
 		},
-		gui = love.graphics.newImage("/assets/keyboardGUI.png")
+		gui = love.graphics.newImage("/assets/keyboardGUI.png"),
+		cancel = love.graphics.newImage("/assets/cancel.png"),
+		save = love.graphics.newImage("/assets/save.png")
 	},
 	data = {
 		ico = "/assets/dataIco.png",

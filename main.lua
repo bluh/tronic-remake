@@ -41,7 +41,7 @@ function love.load()
 			x.fpreload = love.filesystem.load(x.preload)
 		end
 		if x.unload then
-			x.funload = love.filesystem.load(x.unload)
+			x.funload = love.filesystem.load(x.unload) --haha FUNload
 		end
 		d = d + x.icon:getWidth()
 	end

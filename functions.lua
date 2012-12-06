@@ -159,7 +159,7 @@ function hideNodes(id)
 end
 
 function outputData(b,k,x,y)
-	print(b.id,tronics.dats[b.id])
+	print("dataid \""..b.id.."\" contains data: "..tostring(tronics.dats[b.id] or "nil"))
 end
 
 function finalTron(b,k,x,y)
@@ -236,7 +236,6 @@ function startCompute(b,k,x,y)
 end
 
 function resumeFlow(wire)
-	print("deactivating wire")
 	wire.activated = false
 	TRANIX[nexttron.properties.id].fsource(nexttron)
 end
@@ -247,7 +246,7 @@ function flowOut(id,node)
 		error("more than one flowout node connected to "..id.."!"..node.." node!")
 	end
 	if #wire == 0 or mode ~= "COMPUTE" then
-		print("end of line")
+		print("end of flow line")
 		return true
 	end
 	if wire[1][1].id == id.."!"..node then
@@ -255,7 +254,6 @@ function flowOut(id,node)
 	else
 		ntron = wire[1][1].properties.parent
 	end
-	print("activating wire")
 	totaldt = 0
 	wire[1].activated = true
 	nexttron = ntron
@@ -267,21 +265,18 @@ function getData(id,node)
 		error("more than one datain node connected to "..id.."!"..node.." node!")
 	end
 	if #wire == 0 then
-		print("no data assuming 1")
-		return 1
+		return 0 --we can assume 0 now that there's a keyboard
 	end
 	if wire[1][1].id == id.."!"..node then
 		ntron = wire[1][2].properties.parent
 	else
 		ntron = wire[1][1].properties.parent
 	end
-	print("got data "..(tronics.dats[ntron.id] or 0))
 	return (tronics.dats[ntron.id] or 0)
 end
 
 function sendData(id,node,data)
 	wire = getAssocWires(id.."!"..node)
-	print("sending data out of "..id.."!"..node,data,#wire)
 	if #wire > 1 then
 		error("more than one data node connected to "..id.."!"..node.." node!")
 	end
@@ -293,6 +288,5 @@ function sendData(id,node,data)
 	else
 		ntron = wire[1][1].properties.parent
 	end
-	print(ntron.id)
 	tronics.dats[ntron.id] = data
 end

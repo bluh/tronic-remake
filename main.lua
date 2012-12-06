@@ -9,7 +9,11 @@ kdrag = ""
 wire = {}
 nexttron = nil
 totaldt = 0
---
+--input vars
+grabInput = false
+drawInput = {}
+boxdt = 0
+--etc
 draw = {}
 tronics = {
 	id = 0,
@@ -47,6 +51,7 @@ function love.load()
 	end
 	addDraw(love.graphics.newImage("/assets/go.png"),16,16,"go")
 	boxClicks:addBox(16,16,32,32,"go"):setCallback(startCompute,"oclick")
+	love.keyboard.setKeyRepeat(0.76, 0.06)
 	mode = "ON"
 end
 
@@ -96,6 +101,9 @@ function love.mousereleased(x,y)
 end
 
 function love.keypressed(k)
+	if grabInput then
+		inputHandler:keyDown(k)
+	end
 	if k == "up" then
 		screeny = screeny + 16
 	elseif k == "down" then
@@ -115,6 +123,12 @@ function love.keypressed(k)
 	end
 end
 
+function love.keyreleased(k)
+	if grabInput then
+		inputHandler:keyUp(k)
+	end
+end
+
 function love.draw(dt)
 	if mode ~= "OFF" and mode ~= "LOADING" then
 		mousex,mousey = love.mouse.getX() + screenx,love.mouse.getY() + screeny
@@ -123,7 +137,26 @@ function love.draw(dt)
 		love.graphics.draw(TRANIX.background,0,0) --must be called first
 		--draw overlay
 		for _,x in pairs(draw) do
-			love.graphics.draw(x[1],x[2],x[3])
+			love.graphics.setColor(x[4] or {255,255,255})
+			if type(x[1]) == "userdata" then
+				love.graphics.draw(x[1],x[2],x[3])
+			elseif type(x[1]) == "string" then
+				love.graphics.print(x[1],x[2],x[3])
+			end
+			love.graphics.setColor(255,255,255)
+		end
+		--draw input
+		if #drawInput > 1 then
+			boxdt = boxdt + love.timer:getDelta()
+			love.graphics.setColor(drawInput[4])
+			if boxdt > 2 then
+				boxdt = 0
+			end
+			if boxdt > 1 and not drawInput[5] then
+				love.graphics.print(drawInput[1].."...",drawInput[2],drawInput[3])
+			else
+				love.graphics.print(drawInput[1],drawInput[2],drawInput[3])
+			end
 		end
 		love.graphics.setColor(0,0,0)
 		love.graphics.print("{"..screenx..","..screeny.."}",600,16,0,1.5,1.5)

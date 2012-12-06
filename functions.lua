@@ -1,8 +1,8 @@
-function addDraw(dr,x,y,id) --this is used for an overlay, not for grid things
+function addDraw(dr,x,y,id,c) --this is used for an overlay, not for grid things
 	if id then
-		draw[id] = {dr,x,y}
+		draw[id] = {dr,x,y,c}
 	else
-		table.insert(draw,{dr,x,y})
+		table.insert(draw,{dr,x,y,c})
 	end
 end
 

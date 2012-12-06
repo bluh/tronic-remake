@@ -77,7 +77,7 @@ boxClicks = {
 		for _,a in pairs(self.boxes) do
 			if a:check(x,y) then
 				--if kind ~= "move" then print(kind,x,y,b.id) end
-				if a.callback[kind] and self.paused[kind] == nil then return a.callback[kind](a,kind,x,y) end
+				if a.callback[kind] and self.paused[kind] == nil then a.callback[kind](a,kind,x,y) end
 			end
 		end
 	end),

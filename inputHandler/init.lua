@@ -5,8 +5,15 @@ inputHandler = {
 	caps = false,
 	shift = false,
 	max = 0,
+	kpfunction = nil,
 	setInput = (function(self,talue)
-		self.value = tostring(talue)
+		self.value = tostring(talue or "")
+	end),
+	setKeypressFunction = (function(self,gfun)
+		self.kpfunction = gfun
+	end),
+	setEnterCallback = (function(self,gfun)
+		self.ecall = gfun
 	end),
 	control = (function(self)
 		love.keyboard.setKeyRepeat(310,10)
@@ -30,7 +37,9 @@ inputHandler = {
 			k = ""
 		elseif k == "return" then
 			k = ""
-			--callback fun here
+			if self.ecall then
+				self.ecall()
+			end
 			return self.value
 		elseif k == "backspace" then
 			self.value = self.value:sub(0,self.value:len()-1) or ""
@@ -68,6 +77,9 @@ inputHandler = {
 		end
 		if (not ((self.value:len() + 1) > self.max)) or self.max == 0 then
 			self.value = self.value..""..k
+		end
+		if self.kpfunction then
+			self.kpfunction(self.value,k)
 		end
 		return (self.value),k
 	end),

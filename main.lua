@@ -98,6 +98,7 @@ function love.mousereleased(x,y)
 	ax,ay = x - screenx,y - screeny
 	boxClicks:sendCallbacks(ax,ay,"release")
 	boxClicks:sendCallbacks(x,y,"orelease")
+	print("\n\n")
 end
 
 function love.keypressed(k)
@@ -189,14 +190,14 @@ function love.draw(dt)
 			end
 		end
 		--draw nodes
-		food = boxClicks:getBoxFromXY(amousex - screenx,amousey - screeny)
+		--food = boxClicks:getBoxFromXY(amousex - screenx,amousey - screeny)
 		for i,a in pairs(tronics.nodes) do
 			for t,n in pairs(a) do
-				if not food[i.."!"..t] then
+				--if not food[i.."!"..t] then
 					love.graphics.setColor(n[3][1],n[3][2],n[3][3])
-				else
-					love.graphics.setColor(math.min(255,n[3][1]+80),math.min(255,n[3][2]+80),math.min(255,n[3][3]+80))
-				end
+				--else
+				--	love.graphics.setColor(math.min(255,n[3][1]+80),math.min(255,n[3][2]+80),math.min(255,n[3][3]+80))
+				--end
 				love.graphics.rectangle("fill",n[1] + screenx,n[2] + screeny,6,6) 
 			end
 		end

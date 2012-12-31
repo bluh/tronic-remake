@@ -6,6 +6,7 @@ TRANIXORDER = {
 "subtract",
 "multi",
 "division",
+"speaker",
 }
 TRANIX = {
 	background = love.graphics.newImage("/assets/background.png"),
@@ -87,6 +88,16 @@ TRANIX = {
 			{48,21,4}, --let's just use 4 for data and never talk about it ever again
 		}
 		--data will be hardcoded and will not have a source
+	},
+	speaker = {
+		ico = "/assets/speakerIco.png",
+		sprite = "/assets/speaker.png",
+		source = "/tronics/speaker/source.lua",
+		nodes = {
+			{-3,39,2},
+			{3,-3,1},
+			{45,39,3}
+		}
 	}
 }
 --tranixorder = the order in which tronics are displayed at the bottom (add your tronic here in the order you want it)

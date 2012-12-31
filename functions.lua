@@ -163,24 +163,28 @@ function outputData(b,k,x,y)
 end
 
 function finalTron(b,k,x,y)
+	x,y = x - (mdrag:getWidth()/2) - screenx,y - (mdrag:getHeight()/2) - screeny
+	x,y = x - ((x + 8) % 16),y - ((y + 8) % 16)
 	if idrag == 0 then
 		newid = kdrag.."~"..tronics.id + 1
 		tronics.id = tronics.id + 1
+		tronics.acts[newid] = boxClicks:addBox(x,y,mdrag:getWidth(),mdrag:getHeight(),newid)
 	else
 		newid = idrag
+		print("NEW ID: "..newid)
+		tronics.acts[newid] = boxClicks:updateBox(newid,x,y,mdrag:getWidth(),mdrag:getHeight())
+		
 	end
 	idrag = 0
-	x,y = x - (mdrag:getWidth()/2) - screenx,y - (mdrag:getHeight()/2) - screeny
-	x,y = x - ((x + 8) % 16),y - ((y + 8) % 16)
-	tronics.acts[newid] = boxClicks:addBox(x,y,mdrag:getWidth(),mdrag:getHeight(),newid)
+	boxClicks:removeBox("mDrag")
+	hideNodes("temp")
+	print(tronics.acts[newid])
 	tronics.acts[newid].properties["id"] = kdrag
 	tronics.acts[newid]:setCallback(dragTron,"click")
 	tronics.acts[newid]:setCallback(remTron,"rclick")
 	tronics.acts[newid]:setCallback(outputData,"mclick")
 	drawNodes(newid,x,y,kdrag,tronics.acts[newid])
-	hideNodes("temp")
 	mode = "ON"
-	boxClicks:removeBox("mDrag")
 end
 
 function remTron(b,k,x,y)
@@ -196,7 +200,7 @@ function dragTron(b,k,x,y)
 		hideNodes(b.id)
 		kdrag = b.properties.id
 		mdrag = love.graphics.newImage(TRANIX[kdrag].sprite)
-		boxClicks:removeBox(b.id)
+		boxClicks:updateBox(b.id,0,0,0,0)
 		boxClicks:addBox(x - (mdrag:getWidth()/2),y - (mdrag:getHeight()/2),mdrag:getWidth(),mdrag:getHeight(),"mDrag"):setCallback(finalTron,"orelease")
 		tronics.acts[b.id] = nil
 	end
@@ -208,6 +212,9 @@ function newTron(b,k,x,y)
 		kdrag = b.id
 		mdrag = love.graphics.newImage(TRANIX[b.id].sprite)
 		boxClicks:addBox(x - (mdrag:getWidth()/2),y - (mdrag:getHeight()/2),mdrag:getWidth(),mdrag:getHeight(),"mDrag"):setCallback(finalTron,"orelease")
+	else
+		print("can't let you do that???")
+		
 	end
 end
 

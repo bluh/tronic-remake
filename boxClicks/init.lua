@@ -19,39 +19,60 @@ boxCopy = {
 		self.callback[kind] = callb
 	end)
 }
-
+--[[
+boxFake = {
+	setCallback = (function(self,callb,kind)
+	
+	end)
+}
+]]
 boxClicks = {
 	boxes = {},
 	paused = {},
+	queue = {},
+	callbacking = false,
 	activated = true,
+	id = 0,
 	newBoxId = (function(self)
-		local i = 0
-		repeat i = i + 1
-		until not self:boxExists(i)
-		return i
+		self.id = self.id + 1
+		return self.id
 	end),
 	boxExists = (function(self,id)
 		return self.boxes[id] ~= nil
 	end),
 	addBox = (function(self,x,y,sizex,sizey,id)
-		id = (id or self:newBoxId())
-		assert((sizex > 0 and sizey > 0),"invalid box properties")
-		assert(not self.boxes[id],"duplicate ID: "..id)
-		self.boxes[id] = setmetatable({id = id,properties={x,y,sizex,sizey},callback = {}},{__index=boxCopy})
-		self.boxes[id]:main()
-		return self.boxes[id]
+		--if not callbacking then
+			id = (id or self:newBoxId())
+			assert((sizex > 0 and sizey > 0),"invalid box properties")
+			assert(not self.boxes[id],"duplicate ID: "..id)
+			self.boxes[id] = setmetatable({id = id,properties={x,y,sizex,sizey},callback = {}},{__index=boxCopy})
+			self.boxes[id]:main()
+			print("box "..id.." added")
+			return self.boxes[id]
+		--[[else
+			print("tried to add box "..id.." durring callbacks, adding to queue")
+			table.insert(queue,{"add",x,y,sizex,sizey,id})
+		end]]
 	end),
 	updateBox = (function(self,id,x,y,sizex,sizey)
+		print("box "..id.." update")
 		if not sizex and not sizey then
 			self.boxes[id].properties = {x,y,self.boxes[id].properties[3],self.boxes[id].properties[4]}
 		else
 			self.boxes[id].properties = {x,y,sizex,sizey}
 		end
 		self.boxes[id]:main()
+		return self.boxes[id]
 	end),
 	removeBox = (function(self,id)
 		if self.boxes[id] then
-			self.boxes[id] = nil
+			if not callbacking then
+				print("box "..id.." removed")
+				self.boxes[id] = nil
+			else
+				print("tried to remove box "..id.." durring callbacks, adding to queue")
+				table.insert(self.queue,{"remove",id})
+			end
 		end
 	end),
 	toggleActivated = (function(self,act)
@@ -74,17 +95,25 @@ boxClicks = {
 		return self.boxes[id]
 	end),
 	sendCallbacks = (function(self,x,y,kind)
+		if kind ~= "move" then print(kind,x,y) end
+		callbacking = true
 		for _,a in pairs(self.boxes) do
 			if a:check(x,y) then
-				--if kind ~= "move" then print(kind,x,y,b.id) end
 				if a.callback[kind] and self.paused[kind] == nil then
-					s,e = pcall(a.callback[kind],a,kind,x,y)
-					if not s then
-						print(e)
-					end
+					print(a.id)
+					a.callback[kind](a,kind,x,y)
 				end
 			end
 		end
+		callbacking = false
+		if kind~= "move" then print("stopped "..kind) end
+		for _,b in pairs(self.queue) do
+			if b[1] == "remove" then
+				print("queue tries to remove "..b[2])
+				self:removeBox(b[2])
+			end
+		end
+		self.queue = {}
 	end),
 	pauseCallback = (function(self,back)
 		if self.paused[back] == "paused" then

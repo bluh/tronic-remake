@@ -1,3 +1,9 @@
+function dprint(...)
+	if debugMode then
+		print(...)
+	end
+end
+
 function addDraw(dr,x,y,id,c) --this is used for an overlay, not for grid things
 	if id then
 		draw[id] = {dr,x,y,c}
@@ -162,6 +168,13 @@ function outputData(b,k,x,y)
 	print("dataid \""..b.id.."\" contains data: "..tostring(tronics.dats[b.id] or "nil"))
 end
 
+function inputData(b,k,x,y)
+	print("awaiting data for "..b.id)
+	local input = io.read()
+	tronics.dats[b.id] = (input ~= "" and input) or tronics.dats[b.id]
+	print("dataid \""..b.id.."\" was set to: "..tronics.dats[b.id].."")
+end
+
 function finalTron(b,k,x,y)
 	x,y = x - (mdrag:getWidth()/2) - screenx,y - (mdrag:getHeight()/2) - screeny
 	x,y = x - ((x + 8) % 16),y - ((y + 8) % 16)
@@ -171,18 +184,19 @@ function finalTron(b,k,x,y)
 		tronics.acts[newid] = boxClicks:addBox(x,y,mdrag:getWidth(),mdrag:getHeight(),newid)
 	else
 		newid = idrag
-		print("NEW ID: "..newid)
+		dprint("NEW ID: "..newid)
 		tronics.acts[newid] = boxClicks:updateBox(newid,x,y,mdrag:getWidth(),mdrag:getHeight())
 		
 	end
 	idrag = 0
 	boxClicks:removeBox("mDrag")
 	hideNodes("temp")
-	print(tronics.acts[newid])
+	dprint(tronics.acts[newid])
 	tronics.acts[newid].properties["id"] = kdrag
 	tronics.acts[newid]:setCallback(dragTron,"click")
 	tronics.acts[newid]:setCallback(remTron,"rclick")
 	tronics.acts[newid]:setCallback(outputData,"mclick")
+	tronics.acts[newid]:setCallback(inputData,"pinput")
 	drawNodes(newid,x,y,kdrag,tronics.acts[newid])
 	mode = "ON"
 end
@@ -213,7 +227,7 @@ function newTron(b,k,x,y)
 		mdrag = love.graphics.newImage(TRANIX[b.id].sprite)
 		boxClicks:addBox(x - (mdrag:getWidth()/2),y - (mdrag:getHeight()/2),mdrag:getWidth(),mdrag:getHeight(),"mDrag"):setCallback(finalTron,"orelease")
 	else
-		print("can't let you do that???")
+		print("#WARNING: ALREADY DRAGGING A TRONIC (?)")
 		
 	end
 end
@@ -253,7 +267,7 @@ function flowOut(id,node)
 		error("more than one flowout node connected to "..id.."!"..node.." node!")
 	end
 	if #wire == 0 or mode ~= "COMPUTE" then
-		print("end of flow line")
+		dprint("end of flow line")
 		return true
 	end
 	if wire[1][1].id == id.."!"..node then

@@ -1,4 +1,5 @@
 mode = "OFF"
+debugMode = false
 screenx,screeny = 0,0
 mousex,mousey = 0,0
 --dragging vars
@@ -25,14 +26,18 @@ tronics = {
 
 function love.load()
 	mode = "LOADING"
+	sdel = love.timer.getTime()
+	print("#LOADING")
 	love.graphics.setLine(4,"smooth")
 	love.graphics.setIcon(love.graphics.newImage("/assets/icon.png"))
-	love.filesystem.load("/boxClicks/init.lua")()
-	love.filesystem.load("/tronics/tronicslist.lua")()
 	love.filesystem.load("/functions.lua")()
+	love.filesystem.load("/boxClicks/init.lua")()
 	love.filesystem.load("/inputHandler/init.lua")()
+	love.filesystem.load("/tronics/tronicslist.lua")()
+	edel = love.timer.getTime()
+	print("#FILES LOADED: "..(edel - sdel) * 100 .." MILISECONDS\n#LOADING TRANIX")
 	local d = 24
-	for _,t in pairs(TRANIXORDER) do --time to start fucking colouring these icons, kids
+	for _,t in pairs(TRANIXORDER) do
 		x = TRANIX[t]
 		x.icon = love.graphics.newImage(x.ico)
 		x.image = love.graphics.newImage(x.sprite)
@@ -49,10 +54,13 @@ function love.load()
 		end
 		d = d + x.icon:getWidth()
 	end
+	print("#TRANIX LOADED: "..(love.timer.getTime() - edel) * 100 .." MILISECONDS")
 	addDraw(love.graphics.newImage("/assets/go.png"),16,16,"go")
 	boxClicks:addBox(16,16,32,32,"go"):setCallback(startCompute,"oclick")
 	love.keyboard.setKeyRepeat(0.76, 0.06)
+	print("#INITIALIZING MAIN LOOP")
 	mode = "ON"
+	print("#LOAD SUCCESSFUL: "..(love.timer.getTime() - sdel) *100 .." MILISECONDS TOTAL\n\n")
 end
 
 function love.mousepressed(x,y,k)
@@ -98,7 +106,6 @@ function love.mousereleased(x,y)
 	ax,ay = x - screenx,y - screeny
 	boxClicks:sendCallbacks(ax,ay,"release")
 	boxClicks:sendCallbacks(x,y,"orelease")
-	print("\n\n")
 end
 
 function love.keypressed(k)
@@ -121,6 +128,8 @@ function love.keypressed(k)
 		elseif mode == "COMPUTE" then
 			stopCompute()
 		end
+	elseif k == "p" then
+		boxClicks:sendCallbacks(love.mouse.getX() + screenx,love.mouse.getY() + screeny,"pinput")
 	end
 end
 
@@ -190,14 +199,14 @@ function love.draw(dt)
 			end
 		end
 		--draw nodes
-		--food = boxClicks:getBoxFromXY(amousex - screenx,amousey - screeny)
+		food = boxClicks:getBoxFromXY(amousex - screenx,amousey - screeny)
 		for i,a in pairs(tronics.nodes) do
 			for t,n in pairs(a) do
-				--if not food[i.."!"..t] then
+				if not food[i.."!"..t] then
 					love.graphics.setColor(n[3][1],n[3][2],n[3][3])
-				--else
-				--	love.graphics.setColor(math.min(255,n[3][1]+80),math.min(255,n[3][2]+80),math.min(255,n[3][3]+80))
-				--end
+				else
+					love.graphics.setColor(math.min(255,n[3][1]+80),math.min(255,n[3][2]+80),math.min(255,n[3][3]+80))
+				end
 				love.graphics.rectangle("fill",n[1] + screenx,n[2] + screeny,6,6) 
 			end
 		end

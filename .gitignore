@@ -1,2 +1,3 @@
 ignore/*
-assets/voice
+assets/voice/*
+src/love.exe

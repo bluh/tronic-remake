@@ -4,6 +4,88 @@ function dprint(...)
 	end
 end
 
+function saveAs()
+	print("what will the name of this new save be?")
+	local nsave = io.read()
+	if nsave == "" then print("save canceled") return end
+	savename = nsave
+	save()
+end
+
+function save()
+	if savename == nil then saveAs() return end
+	print("saving to "..love.filesystem.getSaveDirectory().."/"..savename..".json")
+	local tronsave = {}
+	--tronsave.id = tronics.id
+	--tronsave.wires = tronics.wires
+	--tronsave.dats = tronics.dats
+	for i,x in pairs(tronics) do
+		dprint(i)
+		if type(x) == "number" then
+			tronsave[i] = x
+			dprint("copied number "..i)
+		elseif type(x) == "table" then
+			dprint(next(x))
+			if next(x) then
+				if i == "acts" then
+					dprint("copying acts table")
+					tronsave[i] = {}
+					for d,v in pairs(x) do
+						tronsave[i][d] = {v.properties.id,v:getXY()}
+					end
+				elseif i == "wires" then
+					tronsave[i] = {}
+					for d,v in pairs(x) do
+						tronsave[i][d] = {v[1].id,v[2].id,v[3]}
+					end
+				elseif i ~= "nodes" then
+					dprint("copying table that isn't nodes")
+					tronsave[i] = x
+				end
+			end
+		end
+	end
+	local jsonsave = json.encode(tronsave)
+	if not love.filesystem.write(savename..".json",jsonsave) then
+		print("ERROR: COULD NOT WRITE")
+	end
+	print("SAVED")
+end
+
+function loads()
+	print("load which file?")
+	local nload = io.read()
+	print(love.filesystem.getSaveDirectory().."/"..nload..".json")
+	if love.filesystem.exists(nload..".json") then
+		mode = "LOADING"
+		print(love.filesystem.read(nload..".json"))
+		loadtron = json.decode(love.filesystem.read("/"..nload..".json"))
+		for i,x in pairs(tronics.acts) do
+			boxClicks:removeBox(i)
+			removeNodes(i)
+			tronics.acts[i] = nil
+		end
+		for i,x in pairs(loadtron) do
+			if i ~= "acts" and i ~= "wires" then
+				tronics[i] = x
+			end
+		end
+		for d,v in pairs(loadtron.acts) do
+			idrag = d
+			kdrag = v[1]
+			mdrag = love.graphics.newImage(TRANIX[v[1]].sprite)
+			finalTron(nil,nil,tonumber(v[2]),tonumber(v[3]),true)
+		end
+		for d,v in pairs(loadtron.wires) do
+			tronics.wires[d] = {boxClicks:getBoxFromId(v[1]),boxClicks:getBoxFromId(v[2]),v[3],false}
+		end
+		mode = "ON"
+		savename = nload
+	else
+		print("file does not exist")
+	end
+end
+
 function addDraw(dr,x,y,id,c) --this is used for an overlay, not for grid things
 	if id then
 		draw[id] = {dr,x,y,c}
@@ -158,10 +240,12 @@ function removeNodes(id)
 end
 
 function hideNodes(id)
-	for i,_ in pairs(tronics.nodes[id]) do
-		boxClicks:removeBox(id.."!"..i)
+	if tronics.nodes[id] then
+		for i,_ in pairs(tronics.nodes[id]) do
+			boxClicks:removeBox(id.."!"..i)
+		end
+		tronics.nodes[id] = nil
 	end
-	tronics.nodes[id] = nil
 end
 
 function outputData(b,k,x,y)
@@ -175,9 +259,11 @@ function inputData(b,k,x,y)
 	print("dataid \""..b.id.."\" was set to: "..tronics.dats[b.id].."")
 end
 
-function finalTron(b,k,x,y)
-	x,y = x - (mdrag:getWidth()/2) - screenx,y - (mdrag:getHeight()/2) - screeny
-	x,y = x - ((x + 8) % 16),y - ((y + 8) % 16)
+function finalTron(b,k,x,y,l)
+	if not l then --hah take that
+		x,y = x - (mdrag:getWidth()/2) - screenx,y - (mdrag:getHeight()/2) - screeny
+		x,y = x - ((x + 8) % 16),y - ((y + 8) % 16)
+	end
 	if idrag == 0 then
 		newid = kdrag.."~"..tronics.id + 1
 		tronics.id = tronics.id + 1
@@ -185,8 +271,11 @@ function finalTron(b,k,x,y)
 	else
 		newid = idrag
 		dprint("NEW ID: "..newid)
-		tronics.acts[newid] = boxClicks:updateBox(newid,x,y,mdrag:getWidth(),mdrag:getHeight())
-		
+		if boxClicks:boxExists(newid) then
+			tronics.acts[newid] = boxClicks:updateBox(newid,x,y,mdrag:getWidth(),mdrag:getHeight())
+		else
+			tronics.acts[newid] = boxClicks:addBox(x,y,mdrag:getWidth(),mdrag:getHeight(),newid)
+		end
 	end
 	idrag = 0
 	boxClicks:removeBox("mDrag")
@@ -217,6 +306,8 @@ function dragTron(b,k,x,y)
 		boxClicks:updateBox(b.id,0,0,0,0)
 		boxClicks:addBox(x - (mdrag:getWidth()/2),y - (mdrag:getHeight()/2),mdrag:getWidth(),mdrag:getHeight(),"mDrag"):setCallback(finalTron,"orelease")
 		tronics.acts[b.id] = nil
+	else
+		print("#WARNING: ALREADY DRAGGING A TRONIC (??)")
 	end
 end
 

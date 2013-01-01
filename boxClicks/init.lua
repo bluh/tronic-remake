@@ -46,6 +46,7 @@ boxClicks = {
 	end),
 	updateBox = (function(self,id,x,y,sizex,sizey)
 		dprint("box "..id.." update")
+		if not self:boxExists(id) then error("could not update box with box "..id.." (box does not exist)") end
 		if not sizex and not sizey then
 			self.boxes[id].properties = {x,y,self.boxes[id].properties[3],self.boxes[id].properties[4]}
 		else

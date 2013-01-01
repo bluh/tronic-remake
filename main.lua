@@ -1,5 +1,6 @@
 mode = "OFF"
 debugMode = false
+savename = nil
 screenx,screeny = 0,0
 mousex,mousey = 0,0
 --dragging vars
@@ -27,15 +28,16 @@ tronics = {
 function love.load()
 	mode = "LOADING"
 	sdel = love.timer.getTime()
-	print("#LOADING")
+	print("#LOADING LIBRARIES")
 	love.graphics.setLine(4,"smooth")
 	love.graphics.setIcon(love.graphics.newImage("/assets/icon.png"))
+	love.filesystem.load("/json/json.lua")()
 	love.filesystem.load("/functions.lua")()
 	love.filesystem.load("/boxClicks/init.lua")()
 	love.filesystem.load("/inputHandler/init.lua")()
 	love.filesystem.load("/tronics/tronicslist.lua")()
 	edel = love.timer.getTime()
-	print("#FILES LOADED: "..(edel - sdel) * 100 .." MILISECONDS\n#LOADING TRANIX")
+	print("#LIBRARIES LOADED: "..(edel - sdel) * 100 .." MILISECONDS\n#LOADING TRANIX")
 	local d = 24
 	for _,t in pairs(TRANIXORDER) do
 		x = TRANIX[t]
@@ -111,25 +113,34 @@ end
 function love.keypressed(k)
 	if grabInput then
 		inputHandler:keyDown(k)
-	end
-	if k == "up" then
-		screeny = screeny + 16
-	elseif k == "down" then
-		screeny = screeny - 16
-	elseif k == "right" then
-		screenx = screenx - 16
-	elseif k == "left" then
-		screenx = screenx + 16
-	elseif k == " " then
-		screenx,screeny = 0,0
-	elseif k == "q" then
-		if mode == "ON" then
-			startCompute()
-		elseif mode == "COMPUTE" then
-			stopCompute()
+	else
+		if k == "up" then
+			screeny = screeny + 16
+		elseif k == "down" then
+			screeny = screeny - 16
+		elseif k == "right" then
+			screenx = screenx - 16
+		elseif k == "left" then
+			screenx = screenx + 16
+		elseif k == " " then
+			screenx,screeny = 0,0
+		elseif k == "q" then
+			if mode == "ON" then
+				startCompute()
+			elseif mode == "COMPUTE" then
+				stopCompute()
+			end
+		elseif k == "e" then
+			boxClicks:sendCallbacks(love.mouse.getX() + screenx,love.mouse.getY() + screeny,"pinput")
+		elseif k == "a" then
+			saveAs()
+		elseif k == "s" then
+			save()
+		elseif k == "d" then
+			print(savename)
+		elseif k == "f" then
+			loads()
 		end
-	elseif k == "p" then
-		boxClicks:sendCallbacks(love.mouse.getX() + screenx,love.mouse.getY() + screeny,"pinput")
 	end
 end
 
